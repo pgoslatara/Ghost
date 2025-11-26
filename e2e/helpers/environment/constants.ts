@@ -1,5 +1,6 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
+import type {DevEnvironment, TestEnvironment} from './service-managers/dev-ghost-manager';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,4 +40,51 @@ export const PORTAL = {
 export const MAILPIT = {
     PORT: 1025
 };
+
+/**
+ * Configuration for dev environment mode.
+ * Used when yarn dev:forward infrastructure is detected.
+ */
+export const DEV_ENVIRONMENT = {
+    networkName: 'ghost_dev',
+    projectNamespace: 'ghost-dev',
+    mysql: {
+        host: 'ghost-dev-mysql',
+        port: 3306,
+        user: 'root',
+        password: 'root'
+    },
+    redis: {
+        host: 'ghost-dev-redis',
+        port: 6379
+    },
+    tinybird: {
+        host: TINYBIRD.LOCAL_HOST,
+        port: TINYBIRD.PORT
+    }
+} satisfies DevEnvironment;
+
+export const TEST_ENVIRONMENT = {
+    projectNamespace: 'ghost-dev-e2e',
+    gateway: {
+        image: 'ghost-dev-ghost-dev-gateway'
+    },
+    ghost: {
+        image: 'ghost-dev-ghost-dev',
+        workdir: '/home/ghost/ghost/core',
+        port: 2368,
+        env: [
+            'NODE_ENV=development',
+            'server__host=0.0.0.0',
+            `server__port=2368`,
+            // Public assets via gateway (same as compose.dev.yaml)
+            'portal__url=/ghost/assets/portal/portal.min.js',
+            'comments__url=/ghost/assets/comments-ui/comments-ui.min.js',
+            'sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js',
+            'sodoSearch__styles=/ghost/assets/sodo-search/main.css',
+            'signupForm__url=/ghost/assets/signup-form/signup-form.min.js',
+            'announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js'
+        ]   
+    }
+} satisfies TestEnvironment;
 
