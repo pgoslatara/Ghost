@@ -2,6 +2,7 @@ const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const {MemberCommenting} = require('../../../../../../services/members/commenting/member-commenting');
 
 const commentFields = [
     'id',
@@ -28,7 +29,8 @@ const memberFieldsAdmin = [
     'name',
     'email',
     'expertise',
-    'avatar_image'
+    'avatar_image',
+    'commenting'
 ];
 
 const postFields = [
@@ -71,6 +73,17 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.member) {
         response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
+
+        // For admin requests, parse commenting data and compute can_comment
+        if (!isPublicRequest && response.member.commenting !== undefined) {
+            const commenting = MemberCommenting.parse(response.member.commenting);
+            response.member.can_comment = commenting.canComment;
+            response.member.commenting = {
+                disabled: commenting.disabled,
+                disabled_reason: commenting.disabledReason,
+                disabled_until: commenting.disabledUntil?.toISOString() ?? null
+            };
+        }
     } else {
         response.member = null;
     }

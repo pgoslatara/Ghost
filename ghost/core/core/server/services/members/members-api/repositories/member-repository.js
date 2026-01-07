@@ -1843,4 +1843,21 @@ module.exports = class MemberRepository {
         }
         return true;
     }
+
+    /**
+     * @param {string} memberId
+     * @param {import('../../../commenting/member-commenting').MemberCommenting} commenting
+     * @param {string} actionName
+     * @param {Object} context
+     */
+    async saveCommenting(memberId, commenting, actionName, context) {
+        return this._Member.edit(
+            {commenting: commenting.format()},
+            {
+                id: memberId,
+                context,
+                actionName
+            }
+        );
+    }
 };
