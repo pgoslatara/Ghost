@@ -969,4 +969,20 @@ module.exports = class StripeAPI {
             trial_end: 'now'
         });
     }
+
+    /**
+     * Create a new Stripe Billing Portal Configuration.
+     *
+     * @param {object} options
+     * @param {object} options.business_profile
+     * @param {string} [options.business_profile.headline]
+     * @param {object} options.features
+     * @param {string} options.default_return_url
+     *
+     * @returns {Promise<import('stripe').Stripe.BillingPortal.Configuration>}
+     */
+    async createBillingPortalConfiguration(options) {
+        await this._rateLimitBucket.throttle();
+        return await this._stripe.billingPortal.configurations.create(options);
+    }
 };
