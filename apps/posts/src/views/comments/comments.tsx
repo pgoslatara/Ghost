@@ -36,7 +36,7 @@ const Comments: React.FC = () => {
         keepPreviousData: true
     });
 
-    const {knownPosts, knownMembers} = useKnownFilterValues({comments: data?.comments ?? []});
+    const {knownPosts, knownMembers, knownThreads, knownReplyTos} = useKnownFilterValues({comments: data?.comments ?? []});
 
     return (
         <CommentsLayout>
@@ -46,6 +46,8 @@ const Comments: React.FC = () => {
                         filters={filters}
                         knownMembers={knownMembers}
                         knownPosts={knownPosts}
+                        knownReplyTos={knownReplyTos}
+                        knownThreads={knownThreads}
                         onFiltersChange={setFilters}
                     />
                 )}
