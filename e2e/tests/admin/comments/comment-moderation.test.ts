@@ -100,9 +100,9 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await commentsPage.waitForComments();
 
             await expect(commentsPage.getCommentRowByText('This is the target comment')).toBeVisible();
-            await expect(commentsPage.getCommentRowByText('This is another comment')).not.toBeVisible();
+            await expect(commentsPage.getCommentRowByText('This is another comment')).toBeHidden();
 
-            await expect(page.getByRole('button', {name: 'Filter'})).not.toBeVisible();
+            await expect(page.getByRole('button', {name: 'Filter'})).toBeHidden();
 
             const showAllButton = page.getByRole('button', {name: 'Show all comments'});
             await expect(showAllButton).toBeVisible();
@@ -112,7 +112,7 @@ test.describe('Ghost Admin - Comment Moderation', () => {
             await expect(commentsPage.getCommentRowByText('This is another comment')).toBeVisible();
 
             await expect(page.getByRole('button', {name: 'Filter'})).toBeVisible();
-            await expect(showAllButton).not.toBeVisible();
+            await expect(showAllButton).toBeHidden();
         });
     });
 });
