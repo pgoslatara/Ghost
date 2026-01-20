@@ -29,7 +29,8 @@ const GA_FEATURES = [
     'contentVisibility',
     'explore',
     'utmTracking',
-    'disableMemberCommenting'
+    'disableMemberCommenting',
+    'disableMemberCommentingHideComments'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users

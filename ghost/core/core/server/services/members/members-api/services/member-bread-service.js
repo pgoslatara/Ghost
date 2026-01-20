@@ -381,10 +381,11 @@ module.exports = class MemberBREADService {
      * @param {string} memberId
      * @param {string} reason
      * @param {Date|null} until
+     * @param {boolean} hideComments
      * @param {Object} context
      * @returns {Promise<Object>}
      */
-    async disableCommenting(memberId, reason, until, context) {
+    async disableCommenting(memberId, reason, until, hideComments, context) {
         const member = await this.read({id: memberId});
 
         if (!member) {
@@ -401,6 +402,12 @@ module.exports = class MemberBREADService {
             'commenting_disabled',
             context
         );
+
+        if (hideComments) {
+            // Require lazily to avoid circular dependency and initialization timing issues
+            const commentsService = require('../../../comments');
+            await commentsService.api.bulkUpdateStatus(`member_id:'${memberId}'+status:published`, 'hidden');
+        }
 
         return this.read({id: memberId});
     }

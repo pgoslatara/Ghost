@@ -139,6 +139,123 @@ describe('Member Commenting API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Can disable commenting and hide comments with hide_comments: true', async function () {
+            // Get a post to add comments to
+            const post = await models.Post.findOne({}, {require: true});
+
+            // Create some comments for the member
+            const comment1 = await models.Comment.add({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>First comment</p>',
+                status: 'published'
+            });
+            const comment2 = await models.Comment.add({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Second comment</p>',
+                status: 'published'
+            });
+
+            // Disable commenting with hide_comments: true
+            const {body} = await agent
+                .post(`members/${member.id}/commenting/disable`)
+                .body({
+                    reason: 'Spam behavior',
+                    hide_comments: true
+                })
+                .expectStatus(200);
+
+            // Verify commenting is disabled
+            assert.equal(body.members[0].can_comment, false);
+            assert.equal(body.members[0].commenting.disabled, true);
+
+            // Verify comments are now hidden
+            const updatedComment1 = await models.Comment.findOne({id: comment1.id});
+            const updatedComment2 = await models.Comment.findOne({id: comment2.id});
+
+            assert.equal(updatedComment1.get('status'), 'hidden');
+            assert.equal(updatedComment2.get('status'), 'hidden');
+
+            // Clean up comments
+            await models.Comment.destroy({id: comment1.id});
+            await models.Comment.destroy({id: comment2.id});
+        });
+
+        it('Can disable commenting without hiding comments when hide_comments: false', async function () {
+            // Get a post to add comments to
+            const post = await models.Post.findOne({}, {require: true});
+
+            // Create a comment for the member
+            const comment = await models.Comment.add({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>A visible comment</p>',
+                status: 'published'
+            });
+
+            // Disable commenting with hide_comments: false
+            const {body} = await agent
+                .post(`members/${member.id}/commenting/disable`)
+                .body({
+                    reason: 'Warning',
+                    hide_comments: false
+                })
+                .expectStatus(200);
+
+            // Verify commenting is disabled
+            assert.equal(body.members[0].can_comment, false);
+
+            // Verify comments are still published
+            const updatedComment = await models.Comment.findOne({id: comment.id});
+            assert.equal(updatedComment.get('status'), 'published');
+
+            // Clean up comment
+            await models.Comment.destroy({id: comment.id});
+        });
+
+        it('hide_comments: true only hides published comments, not already hidden ones', async function () {
+            // Get a post to add comments to
+            const post = await models.Post.findOne({}, {require: true});
+
+            // Create a published comment
+            const publishedComment = await models.Comment.add({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Published comment</p>',
+                status: 'published'
+            });
+
+            // Create an already hidden comment
+            const hiddenComment = await models.Comment.add({
+                post_id: post.id,
+                member_id: member.id,
+                html: '<p>Already hidden comment</p>',
+                status: 'hidden'
+            });
+
+            // Disable commenting with hide_comments: true
+            await agent
+                .post(`members/${member.id}/commenting/disable`)
+                .body({
+                    reason: 'Spam behavior',
+                    hide_comments: true
+                })
+                .expectStatus(200);
+
+            // Verify published comment is now hidden
+            const updatedPublished = await models.Comment.findOne({id: publishedComment.id});
+            assert.equal(updatedPublished.get('status'), 'hidden');
+
+            // Verify already hidden comment is still hidden (unchanged)
+            const updatedHidden = await models.Comment.findOne({id: hiddenComment.id});
+            assert.equal(updatedHidden.get('status'), 'hidden');
+
+            // Clean up comments
+            await models.Comment.destroy({id: publishedComment.id});
+            await models.Comment.destroy({id: hiddenComment.id});
+        });
     });
 
     describe('POST /members/:id/commenting/enable', function () {

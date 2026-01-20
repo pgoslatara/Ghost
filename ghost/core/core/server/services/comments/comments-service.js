@@ -1,5 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const nql = require('@tryghost/nql');
 const {MemberCommentEvent} = require('../../../shared/events');
 const DomainEvents = require('@tryghost/domain-events');
 
@@ -450,6 +451,21 @@ class CommentsService {
         });
 
         return model;
+    }
+
+    /**
+     * Bulk update comment status based on NQL filter
+     * @param {string} filter - NQL filter string (e.g., "member_id:'abc123'+status:published")
+     * @param {string} status - New status ('hidden', 'published', 'deleted')
+     * @returns {Promise<number>} Number of comments updated
+     */
+    async bulkUpdateStatus(filter, status) {
+        const db = require('../../data/db');
+        const query = db.knex('comments');
+
+        nql(filter).querySQL(query);
+
+        return await query.update({status});
     }
 
     async getMemberIdByUUID(uuid, options) {
