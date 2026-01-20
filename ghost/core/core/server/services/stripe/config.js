@@ -18,7 +18,7 @@ const messages = {
  */
 
 module.exports = {
-    getConfig({config, urlUtils, settingsHelpers, settingsCache}) {
+    getConfig({config, urlUtils, settingsHelpers}) {
         /**
          * @returns {StripeURLConfig}
          */
@@ -66,7 +66,6 @@ module.exports = {
 
         const urls = getStripeUrlConfig();
         const siteUrl = urlUtils.getSiteUrl();
-        const siteTitle = settingsCache.get('title');
 
         return {
             ...keys,
@@ -77,8 +76,7 @@ module.exports = {
             },
             webhookSecret: webhookSecret,
             webhookHandlerUrl: webhookHandlerUrl.href,
-            siteUrl,
-            siteTitle
+            siteUrl
         };
     }
 };

@@ -23,7 +23,6 @@ const CheckoutSessionEventService = require('./services/webhook/checkout-session
  * @prop {string} webhookSecret The Stripe webhook secret
  * @prop {string} webhookHandlerUrl The URL to handle Stripe webhooks
  * @prop {string} siteUrl The site URL for billing portal return URL
- * @prop {string} siteTitle The site title for billing portal headline
  */
 
 /**
@@ -38,7 +37,7 @@ module.exports = class StripeService {
      * @param {*} deps.donationService
      * @param {*} deps.staffService
      * @param {import('./webhook-manager').StripeWebhook} deps.StripeWebhook
-     * @param {import('./billing-portal-manager').StripeBillingPortal} deps.StripeBillingPortal
+     * @param {object} deps.settingsCache
      * @param {object} deps.models
      * @param {object} deps.models.Product
      * @param {object} deps.models.StripePrice
@@ -54,7 +53,7 @@ module.exports = class StripeService {
         donationService,
         staffService,
         StripeWebhook,
-        StripeBillingPortal,
+        settingsCache,
         models
     }) {
         const api = new StripeAPI({labs});
@@ -69,8 +68,11 @@ module.exports = class StripeService {
         });
 
         const billingPortalManager = new BillingPortalManager({
-            StripeBillingPortal,
-            api
+            api,
+            models: {
+                Settings: models.Settings
+            },
+            settingsCache
         });
 
         const subscriptionEventService = new SubscriptionEventService({
@@ -184,8 +186,7 @@ module.exports = class StripeService {
         await this.webhookManager.start();
 
         this.billingPortalManager.configure({
-            siteUrl: config.siteUrl,
-            siteTitle: config.siteTitle
+            siteUrl: config.siteUrl
         });
         await this.billingPortalManager.start();
     }
