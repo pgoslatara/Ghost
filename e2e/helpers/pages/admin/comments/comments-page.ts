@@ -33,7 +33,47 @@ export class CommentsPage extends AdminPage {
         return this.page.getByRole('menuitem', {name: 'View on post'});
     }
 
+    getDisableCommentingMenuItem(): Locator {
+        return this.page.getByRole('menuitem', {name: 'Disable commenting'});
+    }
+
+    getEnableCommentingMenuItem(): Locator {
+        return this.page.getByRole('menuitem', {name: 'Enable commenting'});
+    }
+
+    getDisableCommentsModal(): Locator {
+        return this.page.getByRole('dialog');
+    }
+
+    getDisableCommentsModalTitle(): Locator {
+        return this.getDisableCommentsModal().getByRole('heading', {name: 'Disable comments'});
+    }
+
+    getDisableCommentsButton(): Locator {
+        return this.page.getByRole('button', {name: 'Disable comments'});
+    }
+
+    getCancelButton(): Locator {
+        return this.getDisableCommentsModal().getByRole('button', {name: 'Cancel'});
+    }
+
+    getCommentingDisabledIndicator(row: Locator): Locator {
+        return row.getByTestId('commenting-disabled-indicator');
+    }
+
     async openMoreMenu(row: Locator): Promise<void> {
         await this.getMoreMenuButton(row).click();
+    }
+
+    async clickDisableCommenting(): Promise<void> {
+        await this.getDisableCommentingMenuItem().click();
+    }
+
+    async clickEnableCommenting(): Promise<void> {
+        await this.getEnableCommentingMenuItem().click();
+    }
+
+    async confirmDisableCommenting(): Promise<void> {
+        await this.getDisableCommentsButton().click();
     }
 }
