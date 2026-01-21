@@ -1,5 +1,5 @@
 const WebhookManager = require('./webhook-manager');
-const BillingPortalManager = require('./billing-portal-manager');
+const {BillingPortalManager} = require('./billing-portal-manager');
 const StripeAPI = require('./stripe-api');
 const StripeMigrations = require('./stripe-migrations');
 const WebhookController = require('./webhook-controller');
