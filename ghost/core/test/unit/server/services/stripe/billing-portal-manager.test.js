@@ -1,18 +1,11 @@
-import assert from 'assert/strict';
-import sinon from 'sinon';
-import {BillingPortalManager} from '../../../../../core/server/services/stripe/billing-portal-manager';
+const assert = require('assert/strict');
+const sinon = require('sinon');
+const {BillingPortalManager} = require('../../../../../core/server/services/stripe/billing-portal-manager');
 
 describe('BillingPortalManager', function () {
-    let mockApi: {
-        createBillingPortalConfiguration: sinon.SinonStub;
-        updateBillingPortalConfiguration: sinon.SinonStub;
-    };
-    let mockSettingsModel: {
-        edit: sinon.SinonStub;
-    };
-    let mockSettingsCache: {
-        get: sinon.SinonStub;
-    };
+    let mockApi;
+    let mockSettingsModel;
+    let mockSettingsCache;
 
     beforeEach(function () {
         mockApi = {
@@ -161,7 +154,7 @@ describe('BillingPortalManager', function () {
 
         it('creates new configuration when update fails with resource_missing', async function () {
             mockSettingsCache.get.withArgs('title').returns('Test Site');
-            const resourceMissingError = new Error('Configuration not found') as Error & {code: string};
+            const resourceMissingError = new Error('Configuration not found');
             resourceMissingError.code = 'resource_missing';
             mockApi.updateBillingPortalConfiguration.rejects(resourceMissingError);
             mockApi.createBillingPortalConfiguration.resolves({id: 'bpc_new456'});

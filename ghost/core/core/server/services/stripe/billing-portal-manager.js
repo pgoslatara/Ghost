@@ -1,58 +1,25 @@
-import type Stripe from 'stripe';
-
 const CONFIGURATION_ID_SETTING = 'stripe_billing_portal_configuration_id';
 
-interface BillingPortalConfigurationOptions {
-    business_profile: {
-        headline: string;
-    };
-    features?: {
-        invoice_history: {
-            enabled: boolean;
-        };
-        payment_method_update: {
-            enabled: boolean;
-        };
-        subscription_cancel: {
-            enabled: boolean;
-        };
-    };
-    default_return_url?: string;
-}
+class BillingPortalManager {
+    /** @type {object} */
+    SettingsModel;
+    /** @type {object} */
+    settingsCache;
+    /** @type {object} */
+    api;
+    /** @type {string|null} */
+    siteUrl = null;
+    /** @type {boolean} */
+    configured = false;
 
-interface StripeAPIInterface {
-    createBillingPortalConfiguration(options: BillingPortalConfigurationOptions): Promise<Stripe.BillingPortal.Configuration>;
-    updateBillingPortalConfiguration(id: string, options: BillingPortalConfigurationOptions): Promise<Stripe.BillingPortal.Configuration>;
-}
-
-interface SettingsModel {
-    edit(settings: Array<{key: string; value: string}>): Promise<void>;
-}
-
-interface SettingsCache {
-    get(key: string): string | null;
-}
-
-interface BillingPortalConfig {
-    siteUrl: string;
-}
-
-interface BillingPortalManagerDeps {
-    api: StripeAPIInterface;
-    models: {
-        Settings: SettingsModel;
-    };
-    settingsCache: SettingsCache;
-}
-
-export class BillingPortalManager {
-    private SettingsModel: SettingsModel;
-    private settingsCache: SettingsCache;
-    private api: StripeAPIInterface;
-    private siteUrl: string | null = null;
-    private configured: boolean = false;
-
-    constructor({api, models, settingsCache}: BillingPortalManagerDeps) {
+    /**
+     * @param {object} deps
+     * @param {object} deps.api
+     * @param {object} deps.models
+     * @param {object} deps.models.Settings
+     * @param {object} deps.settingsCache
+     */
+    constructor({api, models, settingsCache}) {
         this.SettingsModel = models.Settings;
         this.settingsCache = settingsCache;
         this.api = api;
@@ -62,8 +29,10 @@ export class BillingPortalManager {
     /**
      * Configures the billing portal manager, passing in additional dependencies
      * in a different stage of the Stripe service lifecycle.
+     * @param {object} config
+     * @param {string} config.siteUrl
      */
-    configure(config: BillingPortalConfig): void {
+    configure(config) {
         this.siteUrl = config.siteUrl;
         this.configured = true;
     }
@@ -71,7 +40,7 @@ export class BillingPortalManager {
     /**
      * Starts the Billing Portal Manager by ensuring a configuration exists in Stripe.
      */
-    async start(): Promise<void> {
+    async start() {
         if (!this.configured) {
             // Must be called after configure(config)
             return;
@@ -93,8 +62,10 @@ export class BillingPortalManager {
      * - If no configuration exists, create a new one
      * - If a configuration exists, update it with current settings
      * - If update fails (resource_missing), create a new one
+     * @param {string|null} id
+     * @returns {Promise<string>}
      */
-    async createOrUpdateConfiguration(id: string | null): Promise<string> {
+    async createOrUpdateConfiguration(id) {
         if (!id) {
             const configuration = await this.api.createBillingPortalConfiguration(this.getConfigurationOptions());
             return configuration.id;
@@ -103,7 +74,7 @@ export class BillingPortalManager {
         try {
             const configuration = await this.api.updateBillingPortalConfiguration(id, this.getConfigurationOptions(true));
             return configuration.id;
-        } catch (err: unknown) {
+        } catch (err) {
             if (err && typeof err === 'object' && 'code' in err && err.code === 'resource_missing') {
                 const configuration = await this.api.createBillingPortalConfiguration(this.getConfigurationOptions());
                 return configuration.id;
@@ -114,9 +85,11 @@ export class BillingPortalManager {
 
     /**
      * Get the configuration options for the Stripe Billing Portal.
+     * @param {boolean} [updateOnly=false]
+     * @returns {object}
      */
-    getConfigurationOptions(updateOnly: boolean = false): BillingPortalConfigurationOptions {
-        const defaultOptions: BillingPortalConfigurationOptions = {
+    getConfigurationOptions(updateOnly = false) {
+        const defaultOptions = {
             business_profile: {
                 headline: `Manage your ${this.settingsCache.get('title')} subscription`
             },
@@ -131,7 +104,7 @@ export class BillingPortalManager {
                     enabled: true
                 }
             },
-            default_return_url: this.siteUrl!
+            default_return_url: this.siteUrl
         };
 
         if (updateOnly) {
@@ -143,3 +116,7 @@ export class BillingPortalManager {
         }
     }
 }
+
+module.exports = {
+    BillingPortalManager
+};
