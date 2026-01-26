@@ -10,8 +10,9 @@ type Props = {
 
 const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
     const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-    const {member, admin} = useAppContext();
+    const {member, admin, isCommentingDisabled} = useAppContext();
     const isAdmin = !!admin;
+    const isAuthor = member && comment.member?.uuid === member?.uuid;
 
     const toggleContextMenu = () => {
         setIsContextMenuOpen(current => !current);
@@ -21,7 +22,9 @@ const MoreButton: React.FC<Props> = ({comment, toggleEdit}) => {
         setIsContextMenuOpen(false);
     };
 
-    const show = (!!member && comment.status === 'published') || isAdmin;
+    // Hide the menu for disabled members on their own comments (they can't edit or delete)
+    // but still show it for non-authors (who can report) or admins
+    const show = ((!!member && comment.status === 'published') || isAdmin) && !(isCommentingDisabled && isAuthor);
 
     if (!show) {
         return null;

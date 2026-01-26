@@ -44,7 +44,9 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
-        pageUrl
+        pageUrl,
+        supportEmail: '',
+        isCommentingDisabled: false
     });
 
     const iframeRef = React.createRef<HTMLIFrameElement>();
@@ -278,7 +280,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     /** Initialize comments setup once in viewport, fetch data and setup state */
     const initSetup = async () => {
         try {
-            const {member, labs} = await api.init();
+            const {member, labs, supportEmail} = await api.init();
             const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
 
             let comments = initialComments;
@@ -306,7 +308,9 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
-                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null
+                commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                supportEmail,
+                isCommentingDisabled: member && member.can_comment === false
             });
         } catch (e) {
             /* eslint-disable no-console */

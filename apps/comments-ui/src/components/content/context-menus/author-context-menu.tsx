@@ -7,7 +7,12 @@ type Props = {
     toggleEdit: () => void;
 };
 const AuthorContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
-    const {dispatchAction, t} = useAppContext();
+    const {dispatchAction, t, isCommentingDisabled} = useAppContext();
+
+    // Safety net: if member's commenting is disabled, don't show the menu
+    if (isCommentingDisabled) {
+        return null;
+    }
 
     const deleteComment = () => {
         dispatchAction('openPopup', {

@@ -1,3 +1,4 @@
+import LikeCount from './like-count';
 import {Comment, useAppContext} from '../../../app-context';
 import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
 import {useState} from 'react';
@@ -6,13 +7,18 @@ type Props = {
     comment: Comment;
 };
 const LikeButton: React.FC<Props> = ({comment}) => {
-    const {dispatchAction, member, commentsEnabled} = useAppContext();
+    const {dispatchAction, member, commentsEnabled, isCommentingDisabled} = useAppContext();
     const [animationClass, setAnimation] = useState('');
     const [disabled, setDisabled] = useState(false);
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
     const canLike = member && (isPaidMember || !paidOnly);
+
+    // Show read-only count for disabled members
+    if (isCommentingDisabled) {
+        return <LikeCount count={comment.count.likes} liked={comment.liked} />;
+    }
 
     const toggleLike = async () => {
         if (!canLike) {

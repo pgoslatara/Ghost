@@ -8,7 +8,12 @@ type Props = {
 };
 
 const ReplyButton: React.FC<Props> = ({disabled, isReplying, openReplyForm}) => {
-    const {member, t, dispatchAction, commentsEnabled} = useAppContext();
+    const {member, t, dispatchAction, commentsEnabled, isCommentingDisabled} = useAppContext();
+
+    // Hide button entirely for disabled members
+    if (isCommentingDisabled) {
+        return null;
+    }
 
     const paidOnly = commentsEnabled === 'paid';
     const isPaidMember = member && !!member.paid;
